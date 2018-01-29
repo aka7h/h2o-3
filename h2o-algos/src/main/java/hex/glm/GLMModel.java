@@ -463,11 +463,11 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
     // supported families
     public enum Family {
       gaussian(Link.identity), binomial(Link.logit), quasibinomial(Link.logit),poisson(Link.log),
-      gamma(Link.inverse), multinomial(Link.multinomial), tweedie(Link.tweedie);
+      gamma(Link.inverse), multinomial(Link.multinomial), tweedie(Link.tweedie), ordinal(Link.ologit);
       public final Link defaultLink;
       Family(Link link){defaultLink = link;}
     }
-    public static enum Link {family_default, identity, logit, log, inverse, tweedie, multinomial}
+    public static enum Link {family_default, identity, logit, log, inverse, tweedie, multinomial, ologit, oprobit, ologlog}
 
     public static enum Solver {AUTO, IRLSM, L_BFGS, COORDINATE_DESCENT_NAIVE, COORDINATE_DESCENT}
 

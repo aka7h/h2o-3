@@ -27,6 +27,11 @@ public enum DistributionFamily {
     @Override public double linkInv(double f) { return exp(f); }
     @Override public String linkInvString(String f) { return expString(f); }
   },
+  ordinal { // todo: correct this implementation
+    @Override public double link(double f) { return log(f); }
+    @Override public double linkInv(double f) { return exp(f); }
+    @Override public String linkInvString(String f) { return expString(f); }
+  },
   gaussian {
   },
   poisson {

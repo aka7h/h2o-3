@@ -95,6 +95,43 @@ public abstract class GLMTask  {
 
   }
 
+  static class GLMResDevTaskOrdinal extends FrameTask2<GLMResDevTaskOrdinal> {
+    final double [][] _beta;
+    double _likelihood;
+    final int _nclasses;
+    long _nobs;
+
+    public GLMResDevTaskOrdinal(Key jobKey, DataInfo dinfo, double [] beta, int nclasses) {
+      super(null,dinfo, jobKey);
+      _beta = ArrayUtils.convertTo2DMatrix(beta,beta.length/nclasses);
+      _nclasses = nclasses;
+    }
+
+    @Override public boolean handlesSparseData(){return true;}
+    private transient double [] _sparseOffsets;
+
+    @Override
+    public void chunkInit() {
+      _sparseOffsets = MemoryManager.malloc8d(_nclasses);
+      if(_sparse)
+        for(int c = 0; c < _nclasses; ++c)
+          _sparseOffsets[c] = GLM.sparseOffset(_beta[c],_dinfo);
+    }
+    @Override
+    protected void processRow(Row r) {
+      _nobs++;
+      double sumExp = 0;
+      for(int c = 0; c < _nclasses; ++c)
+        sumExp += Math.exp(r.innerProduct(_beta[c]) + _sparseOffsets[c]);
+      int c = (int)r.response(0);
+      _likelihood -= r.weight * ((r.innerProduct(_beta[c]) + _sparseOffsets[c]) - Math.log(sumExp));
+    }
+    @Override public void reduce(GLMResDevTaskOrdinal gt) {_nobs += gt._nobs; _likelihood += gt._likelihood;}
+
+    public double avgDev(){return _likelihood*2/_nobs;}
+    public double dev(){return _likelihood*2;}
+  }
+
   static class GLMResDevTaskMultinomial extends FrameTask2<GLMResDevTaskMultinomial> {
     final double [][] _beta;
     double _likelihood;
@@ -735,6 +772,7 @@ public abstract class GLMTask  {
     }
   }
 
+  // share between multinomial and ordinal regression
   static class GLMMultinomialGradientTask extends MRTask<GLMMultinomialGradientTask> {
     final double [][] _beta;
     final transient double _currentLambda;
@@ -744,6 +782,7 @@ public abstract class GLMTask  {
     Job _job;
     final boolean _sparse;
     final DataInfo _dinfo;
+    Link _link;
 
     /**
      *
@@ -754,6 +793,11 @@ public abstract class GLMTask  {
      * @param reg
      */
     public GLMMultinomialGradientTask(Job job, DataInfo dinfo, double lambda, double[][] beta, double reg) {
+      this(job, dinfo, lambda, beta, reg, Link.logit);
+    }
+
+    public GLMMultinomialGradientTask(Job job, DataInfo dinfo, double lambda, double[][] beta, double reg, Link link) {
+      _link = link;
       _currentLambda = lambda;
       _reg = reg;
       // need to flip the beta
@@ -766,7 +810,7 @@ public abstract class GLMTask  {
       _dinfo = dinfo;
       if(_dinfo._offset) throw H2O.unimpl();
     }
-
+    // common between multinomial and ordinal
     private final void computeCategoricalEtas(Chunk [] chks, double [][] etas, double [] vals, int [] ids) {
       // categoricals
       for(int cid = 0; cid < _dinfo._cats; ++cid){
@@ -806,7 +850,7 @@ public abstract class GLMTask  {
         }
       }
     }
-
+    // common between multinomial and ordinal
     private final void computeNumericEtas(Chunk [] chks, double [][] etas, double [] vals, int [] ids) {
       int numOff = _dinfo.numStart();
       for(int cid = 0; cid < _dinfo._nums; ++cid){
@@ -849,6 +893,11 @@ public abstract class GLMTask  {
             ArrayUtils.wadd(g,etas[i],(vals[i] - off) * scale);
         }
       }
+    }
+    
+    // This method will compute the gradients for Ordinal regression with link ologit
+    final void computeOlogitGrads(double[][]etas, double[] ys, double[] ws, double[] vals, int[] ids) {
+
     }
 
     final void computeGradientMultipliers(double [][] etas, double [] ys, double [] ws){
@@ -899,9 +948,13 @@ public abstract class GLMTask  {
       int [] ids = MemoryManager.malloc4(M);
       computeCategoricalEtas(chks,etas,vals,ids);
       computeNumericEtas(chks,etas,vals,ids);
-      computeGradientMultipliers(etas,response.getDoubles(vals,0,M),ws);
-      computeCategoricalGrads(chks,etas,vals,ids);
-      computeNumericGrads(chks,etas,vals,ids);
+      if (_link == Link.ologit) {
+        computeOlogitGrads(etas, response.getDoubles(vals, 0, M), ws, vals, ids);
+      } else {
+        computeGradientMultipliers(etas, response.getDoubles(vals, 0, M), ws);
+        computeCategoricalGrads(chks, etas, vals, ids);
+        computeNumericGrads(chks, etas, vals, ids);
+      }
       double [] g = _gradient[P-1];
       // add intercept
       for(int i = 0; i < etas.length; ++i)

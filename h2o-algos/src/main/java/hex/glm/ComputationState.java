@@ -56,7 +56,7 @@ public final class ComputationState {
     _dinfo = dinfo;
     _activeData = _dinfo;
     _intercept = _parms._intercept;
-    _nclasses = parms._family == Family.multinomial?nclasses:1;
+    _nclasses = (parms._family == Family.multinomial||parms._family == Family.ordinal)?nclasses:1;
     _alpha = _parms._alpha[0];
   }
 

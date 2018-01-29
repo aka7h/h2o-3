@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by tomasnykodym on 10/28/15.
  */
-public class GLMBasicTestMultinomial extends TestUtil {
+public class GLMBasicTestOrdinal extends TestUtil {
   static Frame _covtype;
   static Frame _train;
   static Frame _test;
@@ -49,7 +49,7 @@ public class GLMBasicTestMultinomial extends TestUtil {
 
   @Test
   public void testCovtypeNoIntercept(){
-    GLMParameters params = new GLMParameters(Family.multinomial);
+    GLMParameters params = new GLMParameters(Family.ordinal);
     GLMModel model = null;
     Frame preds = null;
     Vec weights = _covtype.anyVec().makeCon(1);
@@ -102,7 +102,7 @@ public class GLMBasicTestMultinomial extends TestUtil {
 
   @Test
   public void testCovtypeBasic(){
-    GLMParameters params = new GLMParameters(Family.multinomial);
+    GLMParameters params = new GLMParameters(Family.ordinal);
     GLMModel model = null;
     Frame preds = null;
     Vec weights = _covtype.anyVec().makeCon(1);

@@ -33,8 +33,8 @@
 #'        data frame. This is typically the number of times a row is repeated, but non-integer values are supported as
 #'        well. During training, rows with higher weights matter more, due to the larger loss function pre-factor.
 #' @param family Family. Use binomial for classification with logistic regression, others are for regression problems. Must be
-#'        one of: "gaussian", "binomial", "quasibinomial", "multinomial", "poisson", "gamma", "tweedie". Defaults to
-#'        gaussian.
+#'        one of: "gaussian", "binomial", "quasibinomial", "multinomial", "poisson", "gamma", "tweedie", "ordinal".
+#'        Defaults to gaussian.
 #' @param tweedie_variance_power Tweedie variance power Defaults to 0.
 #' @param tweedie_link_power Tweedie link power Defaults to 1.
 #' @param solver AUTO will set the solver based on given data and the other parameters. IRLSM is fast on on problems with small
@@ -71,8 +71,8 @@
 #'        indicates: If lambda_search is set to False and lambda is equal to zero, the default value of gradient_epsilon
 #'        is equal to .000001, otherwise the default value is .0001. If lambda_search is set to True, the conditional
 #'        values above are 1E-8 and 1E-6 respectively. Defaults to -1.
-#' @param link  Must be one of: "family_default", "identity", "logit", "log", "inverse", "tweedie". Defaults to
-#'        family_default.
+#' @param link  Must be one of: "family_default", "identity", "logit", "log", "inverse", "tweedie", "ologit", "oprobit",
+#'        "ologlog". Defaults to family_default.
 #' @param prior Prior probability for y==1. To be used only for logistic regression iff the data has been sampled and the mean
 #'        of response does not reflect reality. Defaults to -1.
 #' @param lambda_min_ratio Minimum lambda used in lambda search, specified as a ratio of lambda_max (the smallest lambda that drives all
@@ -148,7 +148,7 @@ h2o.glm <- function(x, y, training_frame,
                     score_each_iteration = FALSE,
                     offset_column = NULL,
                     weights_column = NULL,
-                    family = c("gaussian", "binomial", "quasibinomial", "multinomial", "poisson", "gamma", "tweedie"),
+                    family = c("gaussian", "binomial", "quasibinomial", "multinomial", "poisson", "gamma", "tweedie", "ordinal"),
                     tweedie_variance_power = 0,
                     tweedie_link_power = 1,
                     solver = c("AUTO", "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT"),
@@ -167,7 +167,7 @@ h2o.glm <- function(x, y, training_frame,
                     objective_epsilon = -1,
                     beta_epsilon = 0.0001,
                     gradient_epsilon = -1,
-                    link = c("family_default", "identity", "logit", "log", "inverse", "tweedie"),
+                    link = c("family_default", "identity", "logit", "log", "inverse", "tweedie", "ologit", "oprobit", "ologlog"),
                     prior = -1,
                     lambda_min_ratio = -1,
                     beta_constraints = NULL,

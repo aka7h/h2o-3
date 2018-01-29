@@ -275,13 +275,13 @@ class H2OGeneralizedLinearEstimator(H2OEstimator):
         Family. Use binomial for classification with logistic regression, others are for regression problems.
 
         One of: ``"gaussian"``, ``"binomial"``, ``"quasibinomial"``, ``"multinomial"``, ``"poisson"``, ``"gamma"``,
-        ``"tweedie"``  (default: ``"gaussian"``).
+        ``"tweedie"``, ``"ordinal"``  (default: ``"gaussian"``).
         """
         return self._parms.get("family")
 
     @family.setter
     def family(self, family):
-        assert_is_type(family, None, Enum("gaussian", "binomial", "quasibinomial", "multinomial", "poisson", "gamma", "tweedie"))
+        assert_is_type(family, None, Enum("gaussian", "binomial", "quasibinomial", "multinomial", "poisson", "gamma", "tweedie", "ordinal"))
         self._parms["family"] = family
 
 
@@ -572,14 +572,14 @@ class H2OGeneralizedLinearEstimator(H2OEstimator):
         """
         
 
-        One of: ``"family_default"``, ``"identity"``, ``"logit"``, ``"log"``, ``"inverse"``, ``"tweedie"``  (default:
-        ``"family_default"``).
+        One of: ``"family_default"``, ``"identity"``, ``"logit"``, ``"log"``, ``"inverse"``, ``"tweedie"``,
+        ``"ologit"``, ``"oprobit"``, ``"ologlog"``  (default: ``"family_default"``).
         """
         return self._parms.get("link")
 
     @link.setter
     def link(self, link):
-        assert_is_type(link, None, Enum("family_default", "identity", "logit", "log", "inverse", "tweedie"))
+        assert_is_type(link, None, Enum("family_default", "identity", "logit", "log", "inverse", "tweedie", "ologit", "oprobit", "ologlog"))
         self._parms["link"] = link
 
 
